@@ -8,10 +8,12 @@ from openai import AzureOpenAI
 # Load environment variables
 load_dotenv()
 
+# Set up Azure OpenAI client
 ai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
 ai_api_base = os.getenv("AZURE_OPENAI_ENDPOINT")
 ai_api_version = os.getenv("OPENAI_API_VERSION")
 
+# Initialize Azure OpenAI client
 client = AzureOpenAI(
     api_key = ai_api_key,  
     api_version = ai_api_version,
@@ -25,14 +27,18 @@ st.title("📊 CSV Document Analyzer with Azure OpenAI")
 # Upload CSV
 uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
 
+# Check if a file is uploaded
 if uploaded_file is not None:
+    # Read the CSV file
     df = pd.read_csv(uploaded_file)
     st.success("CSV successfully uploaded and previewed below.")
+    # Display the DataFrame
     st.dataframe(df.head(df.shape[0]))
 
     # Ask a question
     question = st.text_input("Ask a question about the data:")
 
+    # Check if a question is provided
     if question:
         # Convert DataFrame to string (sample or full)
         df_sample = df.head(df.shape[0]).to_csv(index=False)
@@ -49,6 +55,7 @@ User Question: {question}
 
         # Call Azure OpenAI
         try:
+            # Make the API call to Azure OpenAI
             response = client.chat.completions.create(
                 model="gpt-4o-mini", #Allowed values for ApiUser: gpt-4o,gpt-4o-mini,
                 messages=[
@@ -62,7 +69,10 @@ User Question: {question}
             )
             #answer = response['choices'][0]['message']['content']
             st.subheader("🧠 Answer")
+            # Display the response from Azure OpenAI
             st.write(response.choices[0].message.content)
 
+        # Handle errors in API call
         except Exception as e:
+            # Display error message
             st.error(f"Error communicating with Azure OpenAI: {e}")
